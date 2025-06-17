@@ -1,0 +1,80 @@
+---
+- hosts: node01
+  become: true
+  tasks:
+    - name: create empty file blog.txt
+      file:
+        path: /opt/news/blog.txt
+        state: touch
+        group: sam
+
+- hosts: node02
+  become: true
+  tasks:
+    - name: create empty file story.txt
+      file:
+        path: /opt/news/story.txt
+        state: touch
+        owner: sam
+
+
+---
+- hosts: node01
+  become: true
+  tasks:
+    - name: create a file and copy contents
+      copy:
+        dest: /opt/file.txt
+        content: 'This file is created by Ansible!'
+
+---
+- hosts: web_hosts
+  become: true
+  tasks:
+  - name: Copy index.html
+    copy:
+      src: /usr/src/blog/index.html
+      dest: /opt/blog
+
+---
+- hosts: node01
+  become: true
+  tasks:
+    - name: replace sting Kodekloud with Ansible
+      replace:
+        dest: /opt/music/blog.txt
+        regexp: Kodekloud
+        replace: Ansible
+
+- hosts: node02
+  become: true
+  tasks:
+    - name: replace Ansible with Kodekloud
+      replace:
+        dest: /opt/music/story.txt
+        regexp: Ansible
+        replace: Kodekloud
+
+
+
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: copy dir from student-node to node01
+      copy:
+        src: /usr/src/condition/blog.txt
+        dest: /opt/condition/blog.txt
+        owner: bob
+        group: bob
+        mode: "0640"
+      when: inventory_hostname == "node01"
+
+    - name: Copy file with owner and permissions on node02
+      copy:
+        src: /usr/src/condition/story.txt
+        dest: /opt/condition/story.txt
+        owner: bob
+        group: bob
+        mode: "0400"
+      when: inventory_hostname == "node02"
